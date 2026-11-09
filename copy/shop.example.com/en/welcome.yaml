@@ -1,0 +1,63 @@
+# Welcome series (3 mails). Every claim here (delivery, returns, payment) must match what the storefront itself says.
+tagline: "Everything for your home, delivered"
+usps:
+  - {label: "✓ Free delivery from €70", path: "/pages/shipping-and-delivery"}
+  - {label: "✓ 14-day returns", path: "/pages/returns", mobile: false}
+  - {label: "✓ Pay in 3 instalments", path: "/pages/pay-in-instalments", mobile: false}
+rating: {format: "{rating}/5 ({count})", path: "/pages/reviews"}
+code_box:
+  label: "Your personal discount code:"
+  note: "Valid on your first order of €100 or more"
+  note_until: "Valid until {{ expires }} on your first order of €100 or more"
+  cta_label: "Use my €10 discount"
+months: [January, February, March, April, May, June, July, August, September, October, November, December]
+day_units: [day, days]
+card_title_strip: []
+products_heading:
+  viewed: "You recently viewed"
+  mixed: "Selected for you"
+  popular: "Popular products"
+help_html: "Any questions? Don't hesitate to <a href=\"{{ help_url }}\" style=\"color:#1a1a1a;\">get in touch</a>. We're always happy to help.<br/><br/>Kind regards,<br/>The Example Shop team"
+help_path: "/pages/customer-service"
+footer_links:
+  - {label: "Customer service", path: "/pages/customer-service"}
+  - {label: "Payment", path: "/pages/payment-options"}
+  - {label: "Shipping & returns", path: "/pages/shipping-and-delivery"}
+footer: "Example Company Ltd. · 1 Example Street&zwnj;, 1000&zwnj; AA&zwnj; Example City"
+unsubscribe_label: "Unsubscribe"
+steps:
+  1:
+    subject: "Your €10 welcome code: {{ code }}"
+    preheader: "Use your personal discount code on your first order."
+    headline: "Welcome to Example Shop!"
+    body_html: "Thank you for signing up. As a welcome gift, you get €10 off your first order."
+    products: fill
+    products_count: 4
+    cta_label: "Use my €10 discount"
+    cta_path: "/collections/best-sellers"
+  2:
+    subject: "Looking for something in particular?"
+    preheader: "Your €10 code {{ code }} is valid until {{ expires }}."
+    headline: "Looking for something in particular?"
+    body_html: "From kitchenware to bedding and from lighting to storage: your welcome discount applies to the whole range."
+    products: viewed
+    categories_heading: "Our range"
+    categories:
+      # handle = the collection the tile image is fetched by; path (optional) = where the tile links to
+      - {label: "Kitchen", handle: "kitchen"}
+      - {label: "Bedding & bath", handle: "bedding-bath", path: "/collections/bedding-and-bath"}
+      - {label: "Lighting", handle: "lighting"}
+      - {label: "Storage", handle: "storage"}
+      - {label: "Garden", handle: "garden"}
+      - {label: "Gifts", handle: "gifts"}
+    cta_label: "See our best sellers"
+    cta_path: "/collections/best-sellers"
+  3:
+    subject: "{{ days_left }} left: your €10 welcome discount"
+    preheader: "Your code {{ code }} expires on {{ expires }}."
+    headline: "Your code expires in {{ days_left }}"
+    body_html: "Your €10 welcome discount is valid until {{ expires }}. After that, the code expires."
+    products: fill
+    products_count: 6
+    cta_label: "Use my €10 discount"
+    cta_path: "/collections/best-sellers"

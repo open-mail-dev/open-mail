@@ -1,0 +1,37 @@
+<mjml>
+  <mj-head>
+    <mj-preview>{{ preheader }}</mj-preview>
+    <mj-raw><meta name="format-detection" content="telephone=no, date=no, address=no, email=no"></mj-raw>
+    <!-- Phone USP row: 3 items at 11px + 12px gaps = 267px in Helvetica (Gmail's fallback) inside a 297px column.
+         Kept free of CSS comments: Gmail drops a whole <style> block it can't parse. -->
+    <mj-style>
+      @media only screen and (max-width: 480px) {
+        .lsp-desktop-only { display: none !important; }
+        .lsp-usp { margin: 0 6px !important; font-size: 11px !important; }
+      }
+    </mj-style>
+    <mj-font name="Cabin" href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;600;700&amp;display=swap" />
+    <mj-attributes>
+      <mj-all font-family="Cabin, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" />
+      <mj-text color="#1a1a1a" padding="0 24px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f6f6f6">
+    <mj-section background-color="#faf2f4" padding="28px 0 20px"><mj-column>
+      <mj-text align="center" font-size="24px" font-weight="700" line-height="30px">{{ brand }}</mj-text>
+      <mj-text align="center" font-size="13px" color="#555555" padding-top="6px">{{ tagline }}</mj-text>
+    </mj-column></mj-section>
+    <mj-section background-color="#ffffff" padding="16px 0" border-bottom="1px solid #eeeeee"><mj-column>
+      <mj-text align="center" font-size="12px" color="#555555" line-height="24px" padding="0 12px">{{ usps_html }}</mj-text>
+    </mj-column></mj-section>
+    <mj-section background-color="#ffffff" padding="32px 0 8px"><mj-column>
+      <mj-text font-size="16px" line-height="26px" color="#333333">{{ body_html }}</mj-text>
+      <mj-button background-color="#1a1a1a" color="#ffffff" font-size="16px" font-weight="600" border-radius="4px" inner-padding="16px 48px" padding="20px 24px 8px" href="{{ cta_url }}">{{ cta_label }}</mj-button>
+      <mj-text font-size="14px" line-height="22px" color="#555555" padding-top="24px" padding-bottom="24px">{{ help_html }}</mj-text>
+    </mj-column></mj-section>
+    <mj-section background-color="#fafafa" padding="20px 0 32px"><mj-column>
+      <mj-text align="center" font-size="13px" line-height="22px">{{ footer_links_html }}</mj-text>
+      <mj-text align="center" font-size="12px" line-height="18px" color="#999999" padding-top="12px"><a href="{{ unsubscribe_url }}" style="color:#999999;">{{ unsubscribe_label }}</a><br/>{{ footer }}</mj-text>
+    </mj-column></mj-section>
+  </mj-body>
+</mjml>

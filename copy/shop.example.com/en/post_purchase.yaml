@@ -1,0 +1,48 @@
+# post_purchase mail(s). Header/footer = the same storefront-checked claims as welcome.yaml.
+tagline: Everything for your home, delivered
+usps:
+- label: ✓ Free delivery from €70
+  path: /pages/shipping-and-delivery
+- label: ✓ 14-day returns
+  path: /pages/returns
+  mobile: false
+- label: ✓ Pay in 3 instalments
+  path: /pages/pay-in-instalments
+  mobile: false
+rating:
+  format: '{rating}/5 ({count})'
+  path: /pages/reviews
+card_title_strip: []
+help_html: Any questions? Don't hesitate to <a href="{{ help_url }}" style="color:#1a1a1a;">get in touch</a>. We're always happy to help.<br/><br/>Kind regards,<br/>The Example Shop team
+help_path: /pages/customer-service
+footer_links:
+- label: Customer service
+  path: /pages/customer-service
+- label: Payment
+  path: /pages/payment-options
+- label: Shipping & returns
+  path: /pages/shipping-and-delivery
+footer: Example Company Ltd. · 1 Example Street&zwnj;, 1000&zwnj; AA&zwnj; Example City
+unsubscribe_label: Unsubscribe
+fallback_path: /collections/best-sellers
+products_heading:
+  viewed: "Recommended with your order"
+  mixed: "Recommended with your order"
+  popular: "Recommended with your order"
+steps:
+  1:
+    subject: "Thank you for your order {{ order_name }}"
+    preheader: "We've received your order."
+    headline: "Thank you for your order!"
+    body_html: "We've received your order {{ order_name }} and are getting started on it."
+    cta_label: "See our bestsellers"
+    cta_path: /collections/best-sellers
+  2:
+    subject: "Add to your order"
+    preheader: "A selection from our range."
+    headline: "Complete your set"
+    body_html: "Looking for something to go with your order? Here's a selection from our range."
+    products: fbt
+    products_count: 4
+    cta_label: "See our bestsellers"
+    cta_path: /collections/best-sellers

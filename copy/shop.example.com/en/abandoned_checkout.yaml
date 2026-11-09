@@ -1,0 +1,74 @@
+# Abandoned checkout (3 mails), rendered by cart_mail.py. Every claim must match the storefront's own pages.
+free_shipping_from: 70
+labels:
+  quantity: Quantity
+  subtotal: Subtotal
+  shipping: Delivery
+  shipping_free: Free
+  shipping_left: '{x} away from free delivery'
+  total: Total
+cta: Complete my order
+rating:
+  format: '{rating}/5 from {count} reviews'
+  path: /pages/reviews
+since: Your online home store since 2015
+trust:
+- label: Free delivery
+  note: from €70
+  path: /pages/shipping-and-delivery
+- label: 14-day returns
+  note: on every order
+  path: /pages/returns
+- label: Pay later
+  note: in 3 interest-free instalments
+  path: /pages/pay-in-instalments
+  pay_later: true    # this item drops out of mail 2, whose pay-later callout (step `pay_later`) already says it
+contact:
+  html: Questions? Call {phone} (Mon–Fri 09:00–17:00) or {chat}.
+  phone: +00 123 456 789
+  tel: '+00123456789'
+  chat_path: /pages/contact
+  chat_label: chat with us
+sign: Kind regards,<br>The Example Shop team
+footer_links:
+- label: Customer service
+  path: /pages/customer-service
+- label: Payment
+  path: /pages/payment-options
+- label: Shipping & returns
+  path: /pages/shipping-and-delivery
+footer: Example Company Ltd. · 1 Example Street&zwnj;, 1000&zwnj; AA&zwnj; Example City
+unsubscribe_label: Unsubscribe
+steps:
+  1:
+    subject: Your basket is waiting for you
+    preheader: Complete your order whenever it suits you.
+    headline: '{name}your basket is still waiting'
+    sub: You were almost done with your order. We've saved everything for you.
+  2:
+    subject: Can we help you with anything?
+    preheader: Get personal advice or pay in 3 interest-free instalments.
+    headline: Can we help you with anything?
+    sub: Not sure about a product, delivery or payment? We're happy to help.
+    help:
+      title: Personal advice
+      rows:
+      - icon: ✆
+        label: Call <b>+00 123 456 789</b>
+        note: Mon–Fri 09:00–17:00
+        url: tel:+00123456789
+      - icon: …
+        label: Chat with us
+        note: via the chat on our website
+        url: /pages/contact
+      - icon: ✉
+        label: Customer service
+        note: FAQs and all our contact details
+        url: /pages/customer-service
+    pay_later: <b>Rather spread the cost?</b> Pay in 3 interest-free instalments.
+  3:
+    subject: Your items are still in your basket
+    preheader: A last reminder about your order.
+    headline: A last reminder
+    sub: Your items are still in your basket. This is the last time we'll email you about it.
+    stars: true

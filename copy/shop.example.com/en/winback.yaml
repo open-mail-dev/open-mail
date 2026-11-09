@@ -1,0 +1,41 @@
+# winback mail(s). Header/footer = the same storefront-checked claims as welcome.yaml.
+tagline: Everything for your home, delivered
+usps:
+- label: ✓ Free delivery from €70
+  path: /pages/shipping-and-delivery
+- label: ✓ 14-day returns
+  path: /pages/returns
+  mobile: false
+- label: ✓ Pay in 3 instalments
+  path: /pages/pay-in-instalments
+  mobile: false
+rating:
+  format: '{rating}/5 ({count})'
+  path: /pages/reviews
+card_title_strip: []
+help_html: Any questions? Don't hesitate to <a href="{{ help_url }}" style="color:#1a1a1a;">get in touch</a>. We're always happy to help.<br/><br/>Kind regards,<br/>The Example Shop team
+help_path: /pages/customer-service
+footer_links:
+- label: Customer service
+  path: /pages/customer-service
+- label: Payment
+  path: /pages/payment-options
+- label: Shipping & returns
+  path: /pages/shipping-and-delivery
+footer: Example Company Ltd. · 1 Example Street&zwnj;, 1000&zwnj; AA&zwnj; Example City
+unsubscribe_label: Unsubscribe
+fallback_path: /collections/best-sellers
+products_heading:
+  viewed: "Goes with your previous order"
+  mixed: "Goes with your previous order"
+  popular: "Goes with your previous order"
+steps:
+  1:
+    subject: "Goes with your previous order"
+    preheader: "A selection that goes with what you ordered from us before."
+    headline: "Something to go with it"
+    body_html: "A few months ago you ordered from Example Shop. Below is a selection from our range that goes with what you ordered then."
+    products: fbt
+    products_count: 4
+    cta_label: "See our bestsellers"
+    cta_path: /collections/best-sellers
