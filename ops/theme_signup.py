@@ -1,5 +1,5 @@
 """Install the signup/tracking/back-in-stock snippet in a store's LIVE Shopify theme: upload
-snippets/lsp-signup.liquid + one render line before </body>.
+snippets/om-signup.liquid + one render line before </body>.
 
     python ops/theme_signup.py shop.example.com            # dry run
     python ops/theme_signup.py shop.example.com --apply    # backup layout → ops/backups/ (gitignored), then write
@@ -20,7 +20,7 @@ import config  # noqa: E402
 import shopify  # noqa: E402
 import stores  # noqa: E402
 
-LINE = "{% render 'lsp-signup' %}"
+LINE = "{% render 'om-signup' %}"
 
 
 def _gql(store):
@@ -65,7 +65,7 @@ def main(argv):
             write(theme, {"layout/theme.liquid": layout.replace(LINE + "\n", "").replace(LINE, "")})
         print("render line present now:", LINE in read(theme, "layout/theme.liquid"))
         return
-    snippet = (HERE.parent / "theme" / "lsp-signup.liquid").read_text()
+    snippet = (HERE.parent / "theme" / "om-signup.liquid").read_text()
     if mode != "--apply":
         print("DRY RUN — would upload the snippet and", "keep" if LINE in layout else "insert", "the render line")
         return
@@ -73,12 +73,12 @@ def main(argv):
     backup.parent.mkdir(exist_ok=True)
     if not backup.exists():
         backup.write_text(layout)
-    write(theme, {"snippets/lsp-signup.liquid": snippet})
+    write(theme, {"snippets/om-signup.liquid": snippet})
     if LINE not in layout:
         i = layout.rindex("</body>")
         write(theme, {"layout/theme.liquid": layout[:i] + LINE + "\n" + layout[i:]})
     print("readback: render line once:", read(theme, "layout/theme.liquid").count(LINE) == 1,
-          "| snippet matches:", read(theme, "snippets/lsp-signup.liquid") == snippet, "| backup:", backup.name)
+          "| snippet matches:", read(theme, "snippets/om-signup.liquid") == snippet, "| backup:", backup.name)
 
 
 if __name__ == "__main__":

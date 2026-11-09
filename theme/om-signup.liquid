@@ -1,115 +1,108 @@
 {%- comment -%}
   Signup popup + footer-newsletter signup, browse/cart tracking and a back-in-stock button for the mail system
-  (mail-ingest). Install: upload as snippets/lsp-signup.liquid and add {% render 'lsp-signup' %} before </body> in
-  layout/theme.liquid (ops/theme_signup.py does both). Texts per language live in the lsp-t / lsp-bis-t tables below.
-  Popup steps: 1 "Get €10 off?" → 2 email → 3 "check your inbox". The code is NEVER shown here: it only travels by
-  email, so a typo'd or made-up address gets nothing (bounces burn the sending domain's reputation).
-  After closing without signing up, a small teaser tab stays on the left edge.
+  (mail-ingest). Install: upload as snippets/om-signup.liquid and add {% render 'om-signup' %} before </body> in
+  layout/theme.liquid (ops/theme_signup.py does both). Texts per language live in the om-t / om-bis-t tables below.
+  Popup: one card with a heading, a line of text and an email field (step 1), then "check your inbox" (step 2).
+  Colours and corner radius are CSS custom properties (--om-*) at the top of the popup styles. The code is NEVER
+  shown here: it only travels by email, so a typo'd or made-up address gets nothing (bounces burn the sending
+  domain's reputation).
 {%- endcomment -%}
 {%- comment -%} Set this to your deployed mail-ingest URL (no trailing slash). {%- endcomment -%}
-{%- assign lsp_api = 'https://REGION-PROJECT_ID.cloudfunctions.net/mail-ingest' -%}
+{%- assign om_api = 'https://REGION-PROJECT_ID.cloudfunctions.net/mail-ingest' -%}
 {%- comment -%} One Shopify store can serve several domains (shop.example.com, shop-ie.example.com and shop-fi.example.com): the store key (stores.py) and the
   language come from the host. Any other host renders nothing; on the shop's primary domain the shop's own locale gets the
   primary storefront's key (shop.domain). A market in a subfolder of the primary domain (e.g. /de-de) can get its own key
   by storefront locale + country, e.g.:
-    elsif lsp_host == shop.domain and request.locale.iso_code == 'de' and localization.country.iso_code == 'DE'
-      and lsp_live contains 'shop.example.com/de-de' → lsp_store = 'shop.example.com/de-de', lsp_lang = 'de'
+    elsif om_host == shop.domain and request.locale.iso_code == 'de' and localization.country.iso_code == 'DE'
+      and om_live contains 'shop.example.com/de-de' → om_store = 'shop.example.com/de-de', om_lang = 'de'
   (that key needs a Store with path_prefix='/de-de' in stores.py and a 'de' entry in both text tables). {%- endcomment -%}
-{%- assign lsp_host = request.host | remove_first: 'www.' -%}
+{%- assign om_host = request.host | remove_first: 'www.' -%}
 {%- comment -%} Market domains switch on one by one: one theme can serve all domains, and a market should only show this
   popup once any other signup popup there is switched off (else two codes, two series). Go-live = add the host here,
   then python ops/theme_signup.py <store> --apply. {%- endcomment -%}
-{%- assign lsp_live = 'shop-ie.example.com,shop-fi.example.com' | split: ',' -%}
+{%- assign om_live = 'shop-ie.example.com,shop-fi.example.com' | split: ',' -%}
 {%- comment -%} Browse/cart reminders (sitetrack.py) switch on per market the same way (plus MAIL_SITE_LIVE on the
   server). {%- endcomment -%}
-{%- assign lsp_track = 'shop.example.com,shop-ie.example.com,shop-fi.example.com' | split: ',' -%}
+{%- assign om_track = 'shop.example.com,shop-ie.example.com,shop-fi.example.com' | split: ',' -%}
 {%- comment -%} Back-in-stock ("Notify me" on sold-out products, notify.py) switches on per market the same way (plus
   MAIL_BIS_LIVE on the server). {%- endcomment -%}
-{%- assign lsp_bis = 'shop.example.com,shop-ie.example.com,shop-fi.example.com' | split: ',' -%}
-{%- assign lsp_store = '' -%}
-{%- if lsp_host == 'shop-ie.example.com' and lsp_live contains 'shop-ie.example.com' -%}{%- assign lsp_store = 'shop-ie.example.com' -%}{%- assign lsp_lang = 'en' -%}
-{%- elsif lsp_host == 'shop-fi.example.com' and lsp_live contains 'shop-fi.example.com' -%}{%- assign lsp_store = 'shop-fi.example.com' -%}{%- assign lsp_lang = 'en' -%}
-{%- elsif lsp_host == shop.domain and request.locale.iso_code == 'en' -%}{%- assign lsp_store = shop.domain -%}{%- assign lsp_lang = 'en' -%}
+{%- assign om_bis = 'shop.example.com,shop-ie.example.com,shop-fi.example.com' | split: ',' -%}
+{%- assign om_store = '' -%}
+{%- if om_host == 'shop-ie.example.com' and om_live contains 'shop-ie.example.com' -%}{%- assign om_store = 'shop-ie.example.com' -%}{%- assign om_lang = 'en' -%}
+{%- elsif om_host == 'shop-fi.example.com' and om_live contains 'shop-fi.example.com' -%}{%- assign om_store = 'shop-fi.example.com' -%}{%- assign om_lang = 'en' -%}
+{%- elsif om_host == shop.domain and request.locale.iso_code == 'en' -%}{%- assign om_store = shop.domain -%}{%- assign om_lang = 'en' -%}
 {%- endif -%}
-{%- if lsp_store != blank -%}
+{%- if om_store != blank -%}
 {%- comment -%} A logged-in customer: sign "email|store" so mail-ingest/ident can hand this browser its visitor id. The key
-  lives in shop metafield lsp.ident_key (= MAIL_IDENT_SECRET, set by ops/ident_key.py), never in this file;
+  lives in shop metafield om.ident_key (= MAIL_IDENT_SECRET, set by ops/ident_key.py), never in this file;
   no key → no signature → nothing happens. {%- endcomment -%}
-{%- assign lsp_ident_sig = '' -%}
-{%- if customer and customer.email != blank and shop.metafields.lsp.ident_key.value != blank -%}
-{%- assign lsp_ident_email = customer.email | strip | downcase -%}
-{%- assign lsp_ident_sig = lsp_ident_email | append: '|' | append: lsp_store | hmac_sha256: shop.metafields.lsp.ident_key.value -%}
+{%- assign om_ident_sig = '' -%}
+{%- if customer and customer.email != blank and shop.metafields.om.ident_key.value != blank -%}
+{%- assign om_ident_email = customer.email | strip | downcase -%}
+{%- assign om_ident_sig = om_ident_email | append: '|' | append: om_store | hmac_sha256: shop.metafields.om.ident_key.value -%}
 {%- endif -%}
 <style>
-  #lsp-signup { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 2147483000; align-items: center; justify-content: center; padding: 16px; }
-  #lsp-signup .lsp-card { position: relative; background: #fff; width: 100%; max-width: 460px; min-height: 530px; border-radius: 0; padding: 64px 28px 48px; box-sizing: border-box; color: #3a3a3a; font-family: inherit; display: flex; flex-direction: column; justify-content: center; }
-  #lsp-signup .lsp-x { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #222; background: #7a7a7a; color: #fff; font-size: 22px; line-height: 30px; text-align: center; cursor: pointer; padding: 0; }
-  #lsp-signup .lsp-h { margin: 0 0 18px; font-size: 34px; line-height: 1.2; font-weight: 700; letter-spacing: .01em; text-transform: uppercase; color: #3a3a3a; }
-  #lsp-signup .lsp-h2 { margin: 0 0 16px; padding: 0 2px; font-size: 21px; line-height: 1.3; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #1a1a1a; text-align: left; }
-  #lsp-signup .lsp-h2 b { font-weight: 700; letter-spacing: .01em; }
-  #lsp-signup .lsp-h3 { margin: 0 0 18px; font-size: 28px; line-height: 1.25; font-weight: 400; color: #3a3a3a; }
-  #lsp-signup .lsp-btn { display: block; width: 100%; box-sizing: border-box; border: 0; background: #000; color: #fff; font: inherit; font-size: 22px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; padding: 20px 12px; cursor: pointer; border-radius: 0; }
-  #lsp-signup .lsp-btn:hover { background: #222; }
-  #lsp-signup .lsp-btn[disabled] { opacity: .6; cursor: default; }
-  #lsp-signup .lsp-no { display: inline-block; margin-top: 40px; background: none; border: 0; font: inherit; font-size: 16px; letter-spacing: .03em; color: #777; cursor: pointer; }
-  #lsp-signup .lsp-in { display: block; width: 100%; box-sizing: border-box; border: 1px solid #333; padding: 16px 18px; font: inherit; font-size: 17px; margin: 0 0 14px; border-radius: 0; }
-  #lsp-signup .lsp-fine { margin: 18px 0 0; font-size: 13px; line-height: 1.4; color: #222; text-align: left; }
-  #lsp-signup .lsp-msg { margin: 10px 0 0; font-size: 15px; min-height: 1em; text-align: left; color: #b00020; }
-  #lsp-signup .lsp-msg a { color: #1a1a1a; text-decoration: underline; cursor: pointer; }
-  #lsp-signup .lsp-p { margin: 0 0 28px; font-size: 17px; line-height: 1.5; color: #3a3a3a; }
-  #lsp-signup [data-step] { text-align: center; }
-  #lsp-teaser-wrap { position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 2147482999; }
-  #lsp-teaser { display: block; background: #000; color: #fff; border: 0; padding: 22px 12px; writing-mode: vertical-rl; transform: rotate(180deg); font: inherit; font-size: 17px; font-weight: 600; cursor: pointer; }
-  #lsp-teaser-x { position: absolute; top: -11px; right: -11px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; background: #000; color: #fff; font-size: 13px; line-height: 18px; padding: 0; cursor: pointer; }
+  /* Theme it here: accent colour, corner radius, text colours. Fonts are inherited from the theme. */
+  #om-signup { --om-accent: #2b59c3; --om-accent-text: #fff; --om-radius: 12px; --om-text: #1f2328; --om-muted: #5f6670; --om-border: #d0d5dd; --om-error: #b42318; --om-overlay: rgba(15, 23, 42, .28); }
+  #om-signup { position: fixed; inset: 0; background: var(--om-overlay); z-index: 2147483000; align-items: center; justify-content: center; padding: 16px; font-family: inherit; }
+  #om-signup .om-card { position: relative; background: #fff; width: 100%; max-width: 440px; border-radius: var(--om-radius); box-shadow: 0 12px 40px rgba(15, 23, 42, .18), 0 2px 6px rgba(15, 23, 42, .08); padding: 28px 24px 20px; box-sizing: border-box; color: var(--om-text); font-family: inherit; text-align: left; }
+  #om-signup .om-x { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--om-muted); font-size: 22px; line-height: 32px; text-align: center; cursor: pointer; padding: 0; }
+  #om-signup .om-x:hover { background: rgba(0, 0, 0, .06); color: var(--om-text); }
+  #om-signup .om-h { margin: 0 32px 8px 0; font-size: 22px; line-height: 1.3; font-weight: 600; color: var(--om-text); }
+  #om-signup .om-p { margin: 0 0 16px; font-size: 15px; line-height: 1.5; color: var(--om-muted); }
+  #om-signup .om-row { display: flex; flex-direction: row; gap: 8px; align-items: stretch; }
+  #om-signup .om-in { flex: 1 1 auto; min-width: 0; height: 44px; box-sizing: border-box; border: 1px solid var(--om-border); border-radius: calc(var(--om-radius) / 2); padding: 0 12px; font: inherit; font-size: 16px; color: var(--om-text); background: #fff; margin: 0; }
+  #om-signup .om-in:focus { outline: 2px solid var(--om-accent); outline-offset: 1px; border-color: var(--om-accent); }
+  #om-signup .om-btn { flex: 0 0 auto; height: 44px; box-sizing: border-box; border: 0; border-radius: calc(var(--om-radius) / 2); background: var(--om-accent); color: var(--om-accent-text); font: inherit; font-size: 15px; font-weight: 600; padding: 0 18px; cursor: pointer; white-space: nowrap; }
+  #om-signup .om-btn:hover { filter: brightness(1.08); }
+  #om-signup .om-btn:focus-visible { outline: 2px solid var(--om-accent); outline-offset: 2px; }
+  #om-signup .om-btn[disabled] { opacity: .6; cursor: default; }
+  #om-signup .om-msg { margin: 8px 0 0; font-size: 14px; line-height: 1.4; min-height: 1em; color: var(--om-error); }
+  #om-signup .om-msg:empty { display: none; }
+  #om-signup .om-msg a { color: var(--om-text); text-decoration: underline; cursor: pointer; }
+  #om-signup .om-fine { margin: 12px 0 0; font-size: 12px; line-height: 1.4; color: var(--om-muted); }
+  #om-signup .om-no { display: inline-block; margin: 10px 0 0; padding: 4px 0; background: none; border: 0; font: inherit; font-size: 13px; color: var(--om-muted); text-decoration: underline; cursor: pointer; }
+  #om-signup .om-done .om-btn { margin-top: 4px; }
   @media (max-width: 480px) {
-    #lsp-signup .lsp-card { min-height: 440px; padding: 56px 20px 32px; }
-    #lsp-signup .lsp-h { font-size: 28px; }
-    #lsp-signup .lsp-h2 { font-size: 18px; }
-    #lsp-signup .lsp-h3 { font-size: 24px; }
-    #lsp-signup .lsp-btn { font-size: 19px; }
+    #om-signup .om-card { padding: 24px 18px 16px; }
+    #om-signup .om-h { font-size: 20px; }
+    #om-signup .om-row { flex-direction: column; }
+    #om-signup .om-btn { width: 100%; }
   }
 </style>
-<div id="lsp-signup" hidden role="dialog" aria-modal="true" aria-labelledby="lsp-signup-title" style="display:none">
-  <div class="lsp-card">
-    <button type="button" class="lsp-x" id="lsp-signup-close" data-t-aria="close">&times;</button>
-    <div data-step="1">
-      <h2 class="lsp-h" id="lsp-signup-title" data-t="title"></h2>
-      <button type="button" class="lsp-btn" id="lsp-yes" data-t="yes"></button>
-      <button type="button" class="lsp-no" id="lsp-no" data-t="no"></button>
-    </div>
-    <form data-step="2" id="lsp-signup-form" hidden novalidate>
-      <h2 class="lsp-h2" data-t="h2"></h2>
-      <input type="email" class="lsp-in" id="lsp-signup-email" name="email" required autocomplete="email" data-t-ph="placeholder">
+<div id="om-signup" hidden role="dialog" aria-modal="true" aria-labelledby="om-signup-title" aria-describedby="om-signup-text" style="display:none">
+  <div class="om-card">
+    <button type="button" class="om-x" id="om-signup-close" data-t-aria="close">&times;</button>
+    <form data-step="1" id="om-signup-form" novalidate>
+      <h2 class="om-h" id="om-signup-title" data-t="title"></h2>
+      <p class="om-p" id="om-signup-text" data-t="text"></p>
+      <div class="om-row">
+        <input type="email" class="om-in" id="om-signup-email" name="email" required autocomplete="email" data-t-ph="placeholder" data-t-aria="placeholder">
+        <button type="submit" class="om-btn" data-t="submit"></button>
+      </div>
       <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
-      <button type="submit" class="lsp-btn" data-t="submit"></button>
-      <p class="lsp-msg" id="lsp-signup-msg" role="status"></p>
-      <p class="lsp-fine" data-t="fine"></p>
+      <p class="om-msg" id="om-signup-msg" role="status" aria-live="polite"></p>
+      <p class="om-fine" data-t="fine"></p>
+      <button type="button" class="om-no" id="om-no" data-t="no"></button>
     </form>
-    <div data-step="3" hidden>
-      <h2 class="lsp-h3" data-t="done_title"></h2>
-      <p class="lsp-p" id="lsp-done-text"></p>
-      <button type="button" class="lsp-btn" id="lsp-done" data-t="done_btn"></button>
+    <div data-step="2" class="om-done" hidden>
+      <h2 class="om-h" data-t="done_title"></h2>
+      <p class="om-p" id="om-done-text"></p>
+      <button type="button" class="om-btn" id="om-done" data-t="done_btn"></button>
     </div>
   </div>
 </div>
-<div id="lsp-teaser-wrap" hidden>
-  <button type="button" id="lsp-teaser" data-t="teaser"></button>
-  <button type="button" id="lsp-teaser-x" data-t-aria="teaser_hide">&times;</button>
-</div>
-<script type="application/json" id="lsp-t">{
+<script type="application/json" id="om-t">{
  "en": {
   "close": "Close",
-  "title": "Want €10 off?",
-  "yes": "Yes, please",
-  "no": "Maybe later",
-  "h2": "Join our newsletter and get <b>€10 off</b> your first order*",
-  "placeholder": "Your email address",
-  "submit": "Send me my €10 code",
-  "fine": "*on orders of €100 or more, valid for 14 days, not combinable with other discounts.",
+  "title": "Get €10 off your first order",
+  "text": "Sign up for our newsletter and we'll email you a €10 discount code.*",
+  "placeholder": "Email address",
+  "submit": "Sign up",
+  "no": "No thanks",
+  "fine": "*On orders of €100 or more, valid for 14 days, not combinable with other discounts. You can unsubscribe at any time.",
   "done_title": "Check your inbox",
-  "done_btn": "Back to the shop",
-  "teaser": "€10 off",
-  "teaser_hide": "Hide",
+  "done_btn": "Continue shopping",
   "err_check": "Please check your email address.",
   "typo": "Did you mean <a>{fix}</a>?",
   "err_many": "Too many attempts. Please try again later.",
@@ -122,18 +115,18 @@
 }</script>
 <script>
 (function () {
-  var T = JSON.parse(document.getElementById("lsp-t").textContent)[{{ lsp_lang | json }}];
+  var T = JSON.parse(document.getElementById("om-t").textContent)[{{ om_lang | json }}];
   function fill(root) {
     var a = root.querySelectorAll("[data-t]"), i;
     for (i = 0; i < a.length; i++) a[i].innerHTML = T[a[i].getAttribute("data-t")];   // our own fixed texts
     a = root.querySelectorAll("[data-t-aria]"); for (i = 0; i < a.length; i++) a[i].setAttribute("aria-label", T[a[i].getAttribute("data-t-aria")]);
     a = root.querySelectorAll("[data-t-ph]"); for (i = 0; i < a.length; i++) a[i].setAttribute("placeholder", T[a[i].getAttribute("data-t-ph")]);
   }
-  fill(document.getElementById("lsp-signup")); fill(document.getElementById("lsp-teaser-wrap"));
+  fill(document.getElementById("om-signup"));
   // Remember the last few products viewed in this browser (by id: a handle can be translated per domain) so the
   // welcome mail can show them.
   // Only once the visitor allowed marketing in Shopify's consent banner.
-  var VIEWED = "lsp_viewed";
+  var VIEWED = "om_viewed";
   {%- if template.name == "product" and product %}
   try {
     var cp = window.Shopify && window.Shopify.customerPrivacy;
@@ -144,31 +137,28 @@
   } catch (e) {}
   {%- endif %}
   function viewed() { try { var v = JSON.parse(localStorage.getItem(VIEWED) || "[]"); return Array.isArray(v) ? v.slice(0, 6) : []; } catch (e) { return []; } }
-  var KEY = "lsp_signup_seen", DONE = "lsp_signed_up", TEASER_OFF = "lsp_teaser_off";
-  var EP = {{ lsp_api | json }} + "/signup";   // mail-ingest/signup
-  var el = document.getElementById("lsp-signup"), f = document.getElementById("lsp-signup-form"), msg = document.getElementById("lsp-signup-msg");
-  var emailInput = document.getElementById("lsp-signup-email"), teaserWrap = document.getElementById("lsp-teaser-wrap"), teaser = document.getElementById("lsp-teaser"), teaserX = document.getElementById("lsp-teaser-x");
+  var KEY = "om_signup_seen", DONE = "om_signed_up";
+  var EP = {{ om_api | json }} + "/signup";   // mail-ingest/signup
+  var el = document.getElementById("om-signup"), f = document.getElementById("om-signup-form"), msg = document.getElementById("om-signup-msg");
+  var emailInput = document.getElementById("om-signup-email");
   var steps = el.querySelectorAll("[data-step]"), lastFocus = null, suggested = null, source = "popup";
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function rm(k) { try { localStorage.removeItem(k); } catch (e) {} }
   function seen() { return Date.now() - (+get(KEY) || 0) < 14 * 864e5; }
   function show(n) { for (var i = 0; i < steps.length; i++) steps[i].hidden = steps[i].getAttribute("data-step") !== String(n); }
-  function teaserOn(on) { teaserWrap.hidden = !(on && !get(DONE) && !get(TEASER_OFF)); }
-  function open(step, src) {
+  function open(src) {
     source = src || "popup";
     lastFocus = document.activeElement;
-    show(step || 1);
+    show(1);
     el.hidden = false;
     el.style.display = "flex";
-    teaserOn(false);
     set(KEY, String(Date.now()));
-    try { (step === 2 ? emailInput : document.getElementById("lsp-yes")).focus(); } catch (e) {}
+    try { emailInput.focus(); } catch (e) {}
   }
   function close() {
     el.style.display = "none";
     el.hidden = true;
-    teaserOn(true);
     if (lastFocus && typeof lastFocus.focus === "function") { try { lastFocus.focus(); } catch (e) {} }
     lastFocus = null;
   }
@@ -182,21 +172,18 @@
 
   if (!get(DONE)) {
     if (!seen()) {
-      setTimeout(function () { if (el.hidden) open(1); }, 8000);
-      addEventListener("scroll", function onS() { if (scrollY > document.body.scrollHeight / 2 - innerHeight) { removeEventListener("scroll", onS); if (el.hidden) open(1); } }, { passive: true });
-    } else { teaserOn(true); }
+      setTimeout(function () { if (el.hidden) open(); }, 8000);
+      addEventListener("scroll", function onS() { if (scrollY > document.body.scrollHeight / 2 - innerHeight) { removeEventListener("scroll", onS); if (el.hidden) open(); } }, { passive: true });
+    }
   }
-  document.getElementById("lsp-signup-close").onclick = close;
-  document.getElementById("lsp-no").onclick = close;
-  document.getElementById("lsp-done").onclick = close;
-  document.getElementById("lsp-yes").onclick = function () { show(2); try { emailInput.focus(); } catch (e) {} };
-  teaser.onclick = function () { open(1); };
-  teaserX.onclick = function () { set(TEASER_OFF, "1"); teaserOn(false); };
+  document.getElementById("om-signup-close").onclick = close;
+  document.getElementById("om-no").onclick = close;
+  document.getElementById("om-done").onclick = close;
   el.addEventListener("click", function (e) { if (e.target === el) close(); });
   addEventListener("keydown", function (e) { if (e.key === "Escape" && !el.hidden) close(); });
   msg.addEventListener("click", function (e) { if (e.target.tagName === "A" && suggested) { emailInput.value = suggested; msg.textContent = ""; suggested = null; emailInput.focus(); } });
   // The theme's footer newsletter form (Shopify contact form tagged "newsletter") signs up through us too, so it gets
-  // the same welcome mails and the same address checks: the email moves into step 2 of the popup and is submitted
+  // the same welcome mails and the same address checks: the email moves into the popup's form and is submitted
   // there. Without JS the Shopify form still posts as before.
   var footers = document.querySelectorAll('form[action^="/contact"]');
   for (var i = 0; i < footers.length; i++) (function (ff) {
@@ -204,7 +191,7 @@
     if (!tags || !em || tags.value.indexOf("newsletter") < 0) return;
     ff.addEventListener("submit", function (e) {
       e.preventDefault();
-      open(2, "footer");
+      open("footer");
       emailInput.value = em.value.trim(); msg.textContent = ""; suggested = null;
       if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit", { cancelable: true }));
     });
@@ -217,18 +204,19 @@
     if (fix && fix !== suggested) { suggested = fix; msg.innerHTML = T.typo.replace("{fix}", esc(fix)); return; }
     var btn = f.querySelector("button[type=submit]"); btn.disabled = true; msg.textContent = "";
     fetch(EP, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ store: {{ lsp_store | json }}, email: addr, source: source, website: f.website.value, viewed: viewed() }) })
+      body: JSON.stringify({ store: {{ om_store | json }}, email: addr, source: source, website: f.website.value, viewed: viewed() }) })
       .then(function (r) { return r.json().then(function (b) { return { s: r.status, b: b }; }); })
       .then(function (x) {
         btn.disabled = false;
         if (x.s === 200) {
           set(DONE, "1");
           if (x.b.vid) { pendingId = x.b.vid; track(); }
-          var t = document.getElementById("lsp-done-text");
+          var t = document.getElementById("om-done-text");
           if (x.b.repeat && !x.b.code_valid) { t.innerHTML = T.done_used.replace("{addr}", esc(addr)); }
           else if (x.b.repeat) { t.innerHTML = T.done_repeat.replace("{addr}", esc(addr)); }
           else { t.innerHTML = T.done_new.replace("{addr}", esc(addr)); }
-          show(3); teaserOn(false);
+          show(2);
+          try { document.getElementById("om-done").focus(); } catch (e) {}
         }
         else if (x.s === 429) { msg.textContent = T.err_many; }
         else if (x.s === 400 && x.b.error === "undeliverable") { msg.textContent = T.err_undeliverable; }
@@ -237,13 +225,13 @@
       })
       .catch(function () { btn.disabled = false; msg.textContent = T.err_fail; });
   });
-  // Browse/cart reminders: know this browser (signup, #lsp= after a click in one of our mails, or a customer login) and
+  // Browse/cart reminders: know this browser (signup, #om= after a click in one of our mails, or a customer login) and
   // report product views + cart adds. Nothing — not even the id — is stored before the visitor allowed marketing in Shopify's consent
-  // banner. The id is kept on every market; events are only sent on markets listed in lsp_track.
-  var ID = "lsp_id", CART_SEEN = "lsp_cart_seen", CUST = "lsp_cust", pendingId = null;
-  var TRACK = {{ lsp_api | json }} + "/track";   // mail-ingest/track
-  var IDENT = {{ lsp_api | json }} + "/ident";   // mail-ingest/ident
-  var hm = /(?:^#|&)lsp=([A-Za-z0-9_.-]+)/.exec(location.hash);
+  // banner. The id is kept on every market; events are only sent on markets listed in om_track.
+  var ID = "om_id", CART_SEEN = "om_cart_seen", CUST = "om_cust", pendingId = null;
+  var TRACK = {{ om_api | json }} + "/track";   // mail-ingest/track
+  var IDENT = {{ om_api | json }} + "/ident";   // mail-ingest/ident
+  var hm = /(?:^#|&)om=([A-Za-z0-9_.-]+)/.exec(location.hash);
   if (hm) {
     pendingId = hm[1];
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
@@ -260,26 +248,26 @@
     } catch (e) {}
   }
   function cartCheck(vid) {
-    {%- if lsp_track contains lsp_store -%}
+    {%- if om_track contains om_store -%}
     fetch("/cart.js", { credentials: "same-origin" }).then(function (r) { return r.json(); }).then(function (c) {
       var seen, now = [];
       try { seen = JSON.parse(get(CART_SEEN) || "[]"); } catch (e) { seen = []; }
       (c.items || []).forEach(function (it) {
         var v = String(it.variant_id);
         now.push(v);
-        if (seen.indexOf(v) < 0) post({ store: {{ lsp_store | json }}, vid: vid, type: "added_to_cart", product_id: String(it.product_id), variant_id: v });
+        if (seen.indexOf(v) < 0) post({ store: {{ om_store | json }}, vid: vid, type: "added_to_cart", product_id: String(it.product_id), variant_id: v });
       });
       set(CART_SEEN, JSON.stringify(now.slice(0, 50)));
     }).catch(function () {});
     {%- endif -%}
   }
   function ident() {
-    {%- if lsp_track contains lsp_store and lsp_ident_sig != blank %}
+    {%- if om_track contains om_store and om_ident_sig != blank %}
     // a logged-in customer wins over any id kept here (shared PC); asked once per customer per browser
     if (ident.busy || get(CUST) === String({{ customer.id | json }})) return false;
     ident.busy = true;
     fetch(IDENT, { method: "POST", headers: { "Content-Type": "text/plain;charset=UTF-8" },
-      body: JSON.stringify({ store: {{ lsp_store | json }}, email: {{ lsp_ident_email | json }}, sig: {{ lsp_ident_sig | json }} }) })
+      body: JSON.stringify({ store: {{ om_store | json }}, email: {{ om_ident_email | json }}, sig: {{ om_ident_sig | json }} }) })
       .then(function (r) { return r.json(); })
       .then(function (b) {
         if ("vid" in b) { if (b.vid) set(ID, b.vid); else rm(ID); set(CUST, String({{ customer.id | json }})); }
@@ -297,9 +285,9 @@
     if (ident()) return;                    // reports this page once the answer is in
     var vid = get(ID);
     if (!vid) return;
-    {%- if lsp_track contains lsp_store -%}
+    {%- if om_track contains om_store -%}
     {%- if template.name == "product" and product %}
-    if (!track.viewed) { track.viewed = true; post({ store: {{ lsp_store | json }}, vid: vid, type: "viewed_product", product_id: String({{ product.id | json }}) }); }
+    if (!track.viewed) { track.viewed = true; post({ store: {{ om_store | json }}, vid: vid, type: "viewed_product", product_id: String({{ product.id | json }}) }); }
     {%- endif %}
     cartCheck(vid);
     {%- endif -%}
@@ -309,33 +297,33 @@
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden" && mktOk() && get(ID)) cartCheck(get(ID)); });
 })();
 </script>
-{%- if template.name == "product" and product and lsp_bis contains lsp_store and product.type != 'never available again' %}
+{%- if template.name == "product" and product and om_bis contains om_store and product.type != 'never available again' %}
 {%- comment -%} Back-in-stock: a "Notify me" button below the add-to-cart form. Shown
   only while the selected variant is sold out; a request is for that variant. Not marketing: no consent, no code. {%- endcomment -%}
 <style>
-  #lsp-bis { margin: 12px 0 0; }
-  #lsp-bis [hidden] { display: none !important; }
-  #lsp-bis .lsp-bis-btn { width: 100%; min-height: 48px; background: #fff; color: #1a1a1a; border: 1px solid #1a1a1a; border-radius: 0; cursor: pointer; }
-  #lsp-bis form { margin-top: 10px; display: flex; flex-direction: row; align-items: stretch; gap: 8px; flex-wrap: wrap; }
-  #lsp-bis input[type=email] { flex: 1 1 200px; height: 44px; min-height: 0; box-sizing: border-box; padding: 0 12px; border: 1px solid #1a1a1a; border-radius: 0; font: inherit; }
-  #lsp-bis .lsp-bis-submit { flex: 0 0 auto; height: 44px; padding: 0 18px; background: #1a1a1a; color: #fff; border: 1px solid #1a1a1a; border-radius: 0; cursor: pointer; }
-  #lsp-bis .lsp-bis-hp { position: absolute; left: -9999px; }
-  #lsp-bis .lsp-bis-msg { margin: 8px 0 0; font-size: 14px; color: #1a1a1a; }
+  #om-bis { margin: 12px 0 0; }
+  #om-bis [hidden] { display: none !important; }
+  #om-bis .om-bis-btn { width: 100%; min-height: 48px; background: #fff; color: #1a1a1a; border: 1px solid #1a1a1a; border-radius: 0; cursor: pointer; }
+  #om-bis form { margin-top: 10px; display: flex; flex-direction: row; align-items: stretch; gap: 8px; flex-wrap: wrap; }
+  #om-bis input[type=email] { flex: 1 1 200px; height: 44px; min-height: 0; box-sizing: border-box; padding: 0 12px; border: 1px solid #1a1a1a; border-radius: 0; font: inherit; }
+  #om-bis .om-bis-submit { flex: 0 0 auto; height: 44px; padding: 0 18px; background: #1a1a1a; color: #fff; border: 1px solid #1a1a1a; border-radius: 0; cursor: pointer; }
+  #om-bis .om-bis-hp { position: absolute; left: -9999px; }
+  #om-bis .om-bis-msg { margin: 8px 0 0; font-size: 14px; color: #1a1a1a; }
 </style>
-<div id="lsp-bis" hidden>
-  <button type="button" class="btn lsp-bis-btn"></button>
-  <div class="lsp-bis-panel" hidden>
-    <p class="lsp-bis-msg lsp-bis-intro"></p>
+<div id="om-bis" hidden>
+  <button type="button" class="btn om-bis-btn"></button>
+  <div class="om-bis-panel" hidden>
+    <p class="om-bis-msg om-bis-intro"></p>
     <form novalidate>
       <input type="email" name="email" autocomplete="email" required value="{%- if customer -%}{{ customer.email | escape }}{%- endif -%}">
-      <input type="text" name="website" class="lsp-bis-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <button type="submit" class="btn lsp-bis-submit"></button>
+      <input type="text" name="website" class="om-bis-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" class="btn om-bis-submit"></button>
     </form>
-    <p class="lsp-bis-msg lsp-bis-result" role="status"></p>
+    <p class="om-bis-msg om-bis-result" role="status"></p>
   </div>
 </div>
-{%- comment -%} Texts per language (add one entry per lsp_lang you use). {%- endcomment -%}
-<script type="application/json" id="lsp-bis-t">{
+{%- comment -%} Texts per language (add one entry per om_lang you use). {%- endcomment -%}
+<script type="application/json" id="om-bis-t">{
  "en": {
   "btn": "Notify me when available",
   "intro": "{title} is out of stock right now. Leave your email address and we'll let you know as soon as it's back.",
@@ -349,14 +337,14 @@
 }</script>
 <script>
 (function () {
-  var NOTIFY = {{ lsp_api | json }} + "/notify";   // mail-ingest/notify
+  var NOTIFY = {{ om_api | json }} + "/notify";   // mail-ingest/notify
   var PRODUCT_ID = String({{ product.id | json }}), TITLE = {{ product.title | json }};
   var VARIANTS = {{ product.variants | json }}.map(function (v) { return [String(v.id), v.available]; });
-  var box = document.getElementById("lsp-bis"), btn = box.querySelector(".lsp-bis-btn"), panel = box.querySelector(".lsp-bis-panel");
-  var form = box.querySelector("form"), intro = box.querySelector(".lsp-bis-intro"), result = box.querySelector(".lsp-bis-result");
+  var box = document.getElementById("om-bis"), btn = box.querySelector(".om-bis-btn"), panel = box.querySelector(".om-bis-panel");
+  var form = box.querySelector("form"), intro = box.querySelector(".om-bis-intro"), result = box.querySelector(".om-bis-result");
   var hasCustomer = {{ customer.email | default: '' | json }} !== "";
-  var T = JSON.parse(document.getElementById("lsp-bis-t").textContent)[{{ lsp_lang | json }}];
-  btn.textContent = T.btn; box.querySelector(".lsp-bis-submit").textContent = T.submit;
+  var T = JSON.parse(document.getElementById("om-bis-t").textContent)[{{ om_lang | json }}];
+  btn.textContent = T.btn; box.querySelector(".om-bis-submit").textContent = T.submit;
   form.email.placeholder = T.email; form.email.setAttribute("aria-label", T.email);
   intro.textContent = T.intro.replace("{title}", TITLE);
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -374,13 +362,13 @@
   function update() { place(); box.hidden = !soldOut(selected()); }
   btn.addEventListener("click", function () {
     // known browser (a click in one of our mails, or a signup), not logged in: one click, no typing
-    var vid = get("lsp_id");
+    var vid = get("om_id");
     if (vid && !hasCustomer) { send({ vid: vid }); return; }
     panel.hidden = false; btn.hidden = true; form.querySelector("[name=email]").focus();
   });
   form.addEventListener("submit", function (e) { e.preventDefault(); send({ email: form.email.value }); });
   function send(who) {
-    var b = { store: {{ lsp_store | json }}, product_id: PRODUCT_ID, variant_id: selected(), website: form.website.value };
+    var b = { store: {{ om_store | json }}, product_id: PRODUCT_ID, variant_id: selected(), website: form.website.value };
     for (var k in who) b[k] = who[k];
     panel.hidden = false; btn.hidden = true; result.textContent = "";
     fetch(NOTIFY, { method: "POST", headers: { "Content-Type": "text/plain;charset=UTF-8" }, body: JSON.stringify(b) })

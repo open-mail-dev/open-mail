@@ -33,7 +33,7 @@ def click(conn, token: str, secret: str):
     conn.execute("INSERT INTO clicks (message_id, url) VALUES (%s,%s)", (row["id"], data["u"]))
     conn.commit()
     # identify this browser to the storefront snippet; a fragment never reaches a server or analytics
-    loc = data["u"] if u.fragment else f"{data['u']}#lsp={tokens.visitor(row['profile_id'], secret)}"
+    loc = data["u"] if u.fragment else f"{data['u']}#om={tokens.visitor(row['profile_id'], secret)}"
     return 302, {"Location": loc}
 
 

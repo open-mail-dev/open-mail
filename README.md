@@ -2,7 +2,7 @@
 
 A small, self-hosted email-marketing system for Shopify stores: a signup popup with a welcome discount, and the
 usual automated flows (welcome series, abandoned checkout, browse abandonment, cart reminder, post-purchase,
-win-back, back-in-stock). It is an alternative to hosted tools such as Klaviyo for shops that want to own their
+win-back, back-in-stock). It is an alternative to hosted email-marketing services for shops that want to own their
 subscriber data and pay per email sent instead of per contact.
 
 It runs as four Google Cloud Functions (Python 3.12) on a Cloud SQL Postgres database and sends through Amazon SES.
@@ -80,10 +80,10 @@ Plain Postgres; `python migrate.py <dsn>` applies `migrations/*.sql` once each, 
 
 ### Storefront snippet
 
-`theme/lsp-signup.liquid` is one Liquid snippet for the Shopify theme. It renders the signup popup (and takes over
+`theme/om-signup.liquid` is one Liquid snippet for the Shopify theme. It renders the signup popup (and takes over
 the theme's footer newsletter form), records product views / cart adds after the visitor allowed marketing in
 Shopify's consent banner, identifies logged-in customers with an HMAC signature (key in shop metafield
-`lsp.ident_key`, never in the theme), and adds a "Notify me" button to sold-out variants. The welcome code is
+`om.ident_key`, never in the theme), and adds a "Notify me" button to sold-out variants. The welcome code is
 never shown on the page: it only goes out by email, so made-up addresses get nothing.
 
 ## Setup
@@ -109,7 +109,7 @@ never shown on the page: it only goes out by email, so made-up addresses get not
 6. **Google Cloud.** Create a Cloud SQL Postgres instance and run the migrations, put the secrets in Secret
    Manager, then `GCP_PROJECT=… CLOUDSQL_INSTANCE=… MAIL_SNS_TOPIC_ARNS=… bash deploy.sh`. Add a Cloud Scheduler
    job that calls `mail-tick` every few minutes. See the checklist at the top of `deploy.sh`.
-7. **Theme.** Set `lsp_api` in `theme/lsp-signup.liquid` to your `mail-ingest` URL, adjust the host and language
+7. **Theme.** Set `om_api` in `theme/om-signup.liquid` to your `mail-ingest` URL, adjust the host and language
    tables, try it on an unpublished theme copy, then `python ops/theme_signup.py <store> --apply`. For logged-in
    customer identification: `MAIL_IDENT_SECRET=… python ops/ident_key.py <store> --apply`.
 8. **Switch flows on.** Flows other than welcome are switched on per storefront through env vars on the functions

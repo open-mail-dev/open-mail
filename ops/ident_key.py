@@ -1,5 +1,5 @@
 """The key the theme signs a logged-in customer's email with (snippet → mail-ingest/ident, sitetrack.ident): shop
-metafield lsp.ident_key = mail-ingest's MAIL_IDENT_SECRET. One Shopify store can serve several storefronts, so one
+metafield om.ident_key = mail-ingest's MAIL_IDENT_SECRET. One Shopify store can serve several storefronts, so one
 write covers them all.
 
     MAIL_IDENT_SECRET=... python ops/ident_key.py shop.example.com            # dry run: does the metafield match?
@@ -21,7 +21,7 @@ import config  # noqa: E402
 import shopify  # noqa: E402
 import stores  # noqa: E402
 
-NS, KEY = "lsp", "ident_key"
+NS, KEY = "om", "ident_key"
 
 
 def _gql(store):

@@ -5,7 +5,7 @@ from datetime import datetime
 
 DB_DSN = os.environ.get("MAIL_DB_DSN", "").strip()
 TOKEN_SECRET = os.environ.get("MAIL_TOKEN_SECRET", "").strip()
-IDENT_SECRET = os.environ.get("MAIL_IDENT_SECRET", "").strip()   # = shop metafield lsp.ident_key (sitetrack.ident)
+IDENT_SECRET = os.environ.get("MAIL_IDENT_SECRET", "").strip()   # = shop metafield om.ident_key (sitetrack.ident)
 WEB_BASE_URL = os.environ.get("MAIL_WEB_BASE_URL", "").rstrip("/")
 SES_REGION = os.environ.get("MAIL_SES_REGION", "eu-west-1")
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()

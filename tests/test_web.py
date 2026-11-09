@@ -142,7 +142,7 @@ def test_click_appends_visitor_fragment(conn):
     status, h = web.click(conn, tokens.sign({"m": m, "u": "https://outlet.example.com/x?utm_source=mail"}, "k"), "k")
     url, frag = h["Location"].split("#", 1)
     assert status == 302 and url == "https://outlet.example.com/x?utm_source=mail"
-    assert tokens.visitor_profile(frag.removeprefix("lsp="), "k") == p
+    assert tokens.visitor_profile(frag.removeprefix("om="), "k") == p
     assert conn.execute("SELECT url FROM clicks").fetchone()["url"] == url    # the logged URL carries no token
 
 

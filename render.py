@@ -300,13 +300,13 @@ def render(flow: str, step: int, store, ctx: dict, links: LinkMaker, catalog: di
     item_style = "color:#555555;text-decoration:none;white-space:nowrap;margin:0 6px;"   # 4 items = 539px ≤ 552px in Helvetica
     # classes drive the phone-only rule in base.mjml (tighter gaps, `mobile: false` items hidden); clients that ignore
     # <style> media queries keep every item and fall back to the 2 + 2 pairs below
-    items = [f'<a class="lsp-usp{"" if u.get("mobile", True) else " lsp-desktop-only"}" href="{href(u["path"])}" '
+    items = [f'<a class="om-usp{"" if u.get("mobile", True) else " om-desktop-only"}" href="{href(u["path"])}" '
              f'style="{item_style}">{_html.escape(u["label"])}</a>' for u in copy["usps"]]
     rating = (catalog or {}).get("rating")
     if rating:
         avg, count = rating
         label = copy["rating"]["format"].format(rating=_number(avg, store.locale, 1), count=_number(count, store.locale))
-        items.insert(0, f'<a class="lsp-usp" href="{href(copy["rating"]["path"])}" style="{item_style}color:#1a1a1a;">'
+        items.insert(0, f'<a class="om-usp" href="{href(copy["rating"]["path"])}" style="{item_style}color:#1a1a1a;">'
                         f'<span style="color:#f0a93b;">★</span> {_html.escape(label)}</a>')
     usps_html = " ".join(f'<span style="white-space:nowrap;">{"".join(items[i:i + 2])}</span>' for i in range(0, len(items), 2))
     html_out = _SHELL.render(

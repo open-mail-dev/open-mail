@@ -206,10 +206,10 @@ def test_grid_never_leaves_an_orphan_card():
 
 def test_desktop_only_usp_is_marked_for_the_phone_rule():
     html = render.render("welcome", 1, S, {"code": "X"}, links(), catalog={"rating": (4.4, 10)}).html
-    assert html.count('class="lsp-usp lsp-desktop-only"') == 2
-    i = html.index('class="lsp-usp lsp-desktop-only"')
+    assert html.count('class="om-usp om-desktop-only"') == 2
+    i = html.index('class="om-usp om-desktop-only"')
     assert "14-day returns" in html[i:i + 400]
-    assert re.search(r"max-width: ?480px\)\s*\{\s*\.lsp-desktop-only\s*\{\s*display: ?none !important", html)
+    assert re.search(r"max-width: ?480px\)\s*\{\s*\.om-desktop-only\s*\{\s*display: ?none !important", html)
 
 
 def test_card_titles_drop_a_category_prefix():

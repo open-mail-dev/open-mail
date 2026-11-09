@@ -6,8 +6,8 @@
          Kept free of CSS comments: Gmail drops a whole <style> block it can't parse. -->
     <mj-style>
       @media only screen and (max-width: 480px) {
-        .lsp-desktop-only { display: none !important; }
-        .lsp-usp { margin: 0 6px !important; font-size: 11px !important; }
+        .om-desktop-only { display: none !important; }
+        .om-usp { margin: 0 6px !important; font-size: 11px !important; }
       }
     </mj-style>
     <mj-font name="Cabin" href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;600;700&amp;display=swap" />

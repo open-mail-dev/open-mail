@@ -49,7 +49,7 @@ def track(conn, body: dict, secret: str, now=None) -> tuple[int, dict]:
 
 def ident(conn, body: dict, ident_secret: str, token_secret: str) -> tuple[int, dict]:
     """A logged-in customer's browser: the theme signs "email|store" with the shop's ident key (Liquid hmac_sha256, hex;
-    key in shop metafield lsp.ident_key = secret mail-ident-secret). {"vid": token} = subscriber, {"vid": None} = someone
+    key in shop metafield om.ident_key = secret mail-ident-secret). {"vid": token} = subscriber, {"vid": None} = someone
     we may not mail (the snippet drops any id kept in that browser), {} = can't tell (the snippet changes nothing)."""
     if not isinstance(body, dict):
         return 400, {}

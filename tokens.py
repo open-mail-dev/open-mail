@@ -34,7 +34,7 @@ def verify(token: str, secret: str) -> dict:
 
 
 def visitor(profile_id: int, secret: str) -> str:
-    """Identifies a browser as this profile (signup response, #lsp= fragment after a mail click)."""
+    """Identifies a browser as this profile (signup response, #om= fragment after a mail click)."""
     return sign({"p": profile_id, "a": "id"}, secret)
 
 
